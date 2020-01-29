@@ -317,6 +317,7 @@ public abstract class AopUtils {
 				// already processed
 				continue;
 			}
+			// 是否能匹配
 			if (canApply(candidate, clazz, hasIntroductions)) {
 				eligibleAdvisors.add(candidate);
 			}

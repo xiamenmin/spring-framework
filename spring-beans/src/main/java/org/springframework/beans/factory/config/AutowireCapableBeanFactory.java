@@ -81,6 +81,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 
 	/**
 	 * Constant that indicates autowiring bean properties by type
+	 * 按照类型自动装配bean的常量
 	 * (applying to all bean property setters).
 	 * @see #createBean
 	 * @see #autowire
@@ -90,6 +91,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 
 	/**
 	 * Constant that indicates autowiring the greediest constructor that
+	 * 按照类型自动装配构造方法
 	 * can be satisfied (involves resolving the appropriate constructor).
 	 * @see #createBean
 	 * @see #autowire

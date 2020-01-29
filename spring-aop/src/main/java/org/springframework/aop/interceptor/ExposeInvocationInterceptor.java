@@ -93,7 +93,7 @@ public class ExposeInvocationInterceptor implements MethodInterceptor, PriorityO
 		}
 		finally {
 			invocation.set(oldInvocation);
-		}
+ 		}
 	}
 
 	@Override

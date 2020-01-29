@@ -188,6 +188,7 @@ public class BeanFactoryPostProcessorTests {
 
 		@Override
 		public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+			System.out.println("www");
 		}
 	}
 

@@ -246,9 +246,20 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
+			// 判断当前bean是否在advisedBeans中（保存了所有需要增强的bean）
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
+			/**
+			 * isInfrastructureClass(beanClass)
+			 * 判断当前bean是否是基础类型的Advice、Pointcut、Advisor、AopInfrastructureBean 或者是否是切面（@Aspect）
+			 * AnnotationAwareAspectJAutoProxyCreator.isInfrastructureClass
+			 *
+			 * 是否需要跳过 shouldSkip
+			 * 获取候选的增强器（也就是切面里面的通知方法）【List<Advisor> candidateAdvisors】
+			 *     每一个封装的通知方法的增强器是 InstantiationModelAwarePointcutAdvisor 返回false
+			 *     判断每一个增强器是否是 AspectJPointcutAdvisor 类型的；返回true
+			 */
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -258,6 +269,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// Create proxy here if we have a custom TargetSource.
 		// Suppresses unnecessary default instantiation of the target bean:
 		// The TargetSource will handle target instances in a custom fashion.
+		/**
+		 * 如果我们有自定义的TargetSource，请在此处创建代理。
+		 * 禁止目标Bean的不必要的默认实例化：
+		 * TargetSource将以自定义方式处理目标实例。
+		 */
 		TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
 		if (targetSource != null) {
 			if (StringUtils.hasLength(beanName)) {
@@ -299,6 +315,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (bean != null) {
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+				// 如果需要的情况下包装，给容器中返回当前组件使用cglib增强了的代理对象；
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
 		}
@@ -341,15 +358,22 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
 			return bean;
 		}
+		// 判断类是否为切面
 		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
 		}
 
 		// Create proxy if we have advice.
+		/**
+		 * 创建代理对象 如果我们有advice
+		 * 获取当前bean的所有增强器（通知方法）  Object[]  specificInterceptors；
+		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
+			// 保存当前bean在advisedBeans中,其实就是打个标记
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
+			// 如果当前bean需要增强，创建当前bean的代理对象；
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			this.proxyTypes.put(cacheKey, proxy.getClass());
@@ -457,8 +481,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}
 		}
-
+		// 获取所有增强器（通知方法）
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+		// 保存到proxyFactory
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);
 		customizeProxyFactory(proxyFactory);
@@ -467,7 +492,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (advisorsPreFiltered()) {
 			proxyFactory.setPreFiltered(true);
 		}
-
+		// 创建代理对象：Spring自动决定
 		return proxyFactory.getProxy(getProxyClassLoader());
 	}
 
